@@ -1,7 +1,7 @@
 const bodyparser = require("body-parser");
 const express = require("express");
 const app = express();
-const cors = require("cors");
+
 const { connect } = require("./db");
 const router = require("./Routes/index");
 const port = 5000;
