@@ -13,15 +13,14 @@ const port = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
       "https://internshala-topaz.vercel.app",
+      "http://localhost:3000",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
 
-// Middlewares
+// Middleware
 app.use(express.json());
 
 app.use(
@@ -44,10 +43,19 @@ app.get("/", (req, res) => {
 
 app.use("/api", router);
 
-// DB
-connect();
+// Start server AFTER DB connects
+async function start() {
+  try {
+    await connect();
 
-// Server
-app.listen(port, () => {
-  console.log(`Server running on ${port}`);
-});
+    app.listen(port, () => {
+      console.log(`Server running on ${port}`);
+    });
+
+  } catch (err) {
+    console.log("Startup error:", err);
+    process.exit(1);
+  }
+}
+
+start();

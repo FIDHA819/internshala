@@ -1,7 +1,11 @@
-const mongoose=require("mongoose")
-require('dotenv').config()
-database=process.env.DATABASE_URL
-const url =database
-module.exports.connect=()=>{
-    mongoose.connect(url,console.log('database is connected'))
+const mongoose = require("mongoose");
+
+async function connect() {
+  await mongoose.connect(
+    process.env.MONGO_URL
+  );
+
+  console.log("database is connected");
 }
+
+module.exports = { connect };
