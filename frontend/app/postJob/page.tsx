@@ -51,7 +51,7 @@ export default function postJobpage(){
       setisloading(true);
       const res = await axios.post(
         // "https://internshala-clone-y2p2.onrender.com/api/job"
-        'http://localhost:5000/api/job'
+        'https://internshala-9pfr.onrender.com/api/job'
         , formData);
       toast.success("job posted successfuly");
       router.push("/adminpanel");

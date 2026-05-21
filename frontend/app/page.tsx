@@ -64,11 +64,11 @@ export default function SvgSlider() {
         const [internshipRes, jobRes] =
           await Promise.all([
             axios.get(
-              "http://localhost:5000/api/internship"
+              "https://internshala-9pfr.onrender.com/api/internship"
             ),
 
             axios.get(
-              "http://localhost:5000/api/job"
+              "https://internshala-9pfr.onrender.com/api/job"
             ),
           ]);
 

@@ -59,9 +59,9 @@ export default function InternshipsPage() {
   useEffect(()=>{
     const fetchdata=async()=>{
       try {
-        const res=await axios.get("http://localhost:5000/api/internship")
+        const res=await axios.get("https://internshala-9pfr.onrender.com/api/internship")
         // ( "https://internshala-clone-y2p2.onrender.com/api/internship")     
-        // setinternship(res.data)
+        setinternship(res.data)
         setfilteredInternships(res.data)
       } catch (error) {
         console.log(error)

@@ -31,13 +31,13 @@ export default function applicationpage() {
   useEffect(() => {
     const fetchdata = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/application");
+        const res = await axios.get("https://internshala-9pfr.onrender.com/api/application");
         setdata(res.data);
       } catch (error) {
         console.log(error);
       }
     };
-    fetchdata();
+    fetchdata();00
   }, []);
   // console.log(data);
   const filteredapplications = data.filter((application: any) => {
@@ -52,7 +52,7 @@ export default function applicationpage() {
   const handleacceptandreject = async (id: any, action: any) => {
     try {
       const res = await axios.put(
-        `http://localhost:5000/api/application/${id}`,
+        `https://internshala-9pfr.onrender.com/api/application/${id}`,
         { action }
       );
       const updateappliacrtion = data.map((app: any) =>

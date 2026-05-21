@@ -67,7 +67,7 @@ export default function UserApplicationPage() {
 
           const res =
             await axios.get(
-              "http://localhost:5000/api/application"
+              "https://internshala-9pfr.onrender.com/api/application"
             );
 
           setdata(
