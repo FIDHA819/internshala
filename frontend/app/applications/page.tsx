@@ -37,7 +37,7 @@ export default function applicationpage() {
         console.log(error);
       }
     };
-    fetchdata();00
+    fetchdata();
   }, []);
   // console.log(data);
   const filteredapplications = data.filter((application: any) => {
