@@ -1,59 +1,60 @@
-const bodyparser = require("body-parser");
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
-
-const app = express();
+const bodyParser = require("body-parser");
 
 const { connect } = require("./db");
 const router = require("./Routes/index");
 
-const port = process.env.PORT || 5000;
+const app = express();
 
-// CORS
 app.use(
   cors({
-    origin: [
-      "https://internshala-topaz.vercel.app",
-      "http://localhost:3000",
-    ],
-    credentials: true,
+    origin: "*",
   })
 );
 
-// Middleware
 app.use(express.json());
 
 app.use(
-  bodyparser.json({
+  bodyParser.json({
     limit: "50mb",
   })
 );
 
 app.use(
-  bodyparser.urlencoded({
+  bodyParser.urlencoded({
     extended: true,
-    limit: "50mb",
   })
 );
 
-// Routes
 app.get("/", (req, res) => {
-  res.send("hello this is internshala backend");
+  res.send("Backend running");
 });
 
 app.use("/api", router);
 
-// Start server AFTER DB connects
 async function start() {
   try {
+    console.log("Starting server...");
+
+    console.log("DATABASE_URL exists:",
+      !!process.env.DATABASE_URL
+    );
+
     await connect();
 
-    app.listen(port, () => {
-      console.log(`Server running on ${port}`);
+    const PORT = process.env.PORT || 10000;
+
+    app.listen(PORT, () => {
+      console.log(`Server running on ${PORT}`);
     });
 
   } catch (err) {
-    console.log("Startup error:", err);
+    console.error("FULL ERROR:");
+    console.error(err);
+
     process.exit(1);
   }
 }
