@@ -18,8 +18,10 @@ import {
 
 import Link from "next/link";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 export default function SvgSlider() {
+  const { t } = useTranslation();
   const [internships, setInternships] = useState<any[]>([]);
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,19 +41,19 @@ export default function SvgSlider() {
 
   const slides = [
     {
-      title: "Start Your Career Journey",
+      title: t("Start Your Career Journey"),
       bg: "bg-indigo-600",
     },
     {
-      title: "Learn From The Best",
+      title: t("Learn From The Best"),
       bg: "bg-blue-600",
     },
     {
-      title: "Grow Your Skills",
+      title: t("Grow Your Skills"),
       bg: "bg-purple-600",
     },
     {
-      title: "Connect With Top Companies",
+      title: t("Connect With Top Companies"),
       bg: "bg-teal-600",
     },
   ];
@@ -116,9 +118,8 @@ export default function SvgSlider() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-
       <h1 className="text-4xl font-bold text-center mb-4">
-        Make your dream career a reality
+        {t("Make your dream career a reality")}
       </h1>
 
       <Swiper
@@ -158,7 +159,7 @@ export default function SvgSlider() {
           }
           className="px-4 py-2 rounded bg-black text-white"
         >
-          All
+          {t("All")}
         </button>
 
         {categories.map((cat) => (
@@ -169,13 +170,13 @@ export default function SvgSlider() {
             }
             className="px-4 py-2 rounded bg-gray-100"
           >
-            {cat}
+            {t(cat)}
           </button>
         ))}
       </div>
 
       <h2 className="text-3xl mb-6">
-        Internships
+        {t("Internships")}
       </h2>
 
       <div className="grid md:grid-cols-3 gap-5">
@@ -216,7 +217,7 @@ export default function SvgSlider() {
               <Link
                 href={`/detailinternship/${internship._id}`}
               >
-                View Details
+                {t("View Details")}
               </Link>
             </div>
           )
@@ -225,7 +226,7 @@ export default function SvgSlider() {
       </div>
 
       <h2 className="text-3xl my-8">
-        Jobs
+        {t("Jobs")}
       </h2>
 
       <div className="grid md:grid-cols-3 gap-5">
@@ -243,7 +244,7 @@ export default function SvgSlider() {
               <Link
                 href={`/detailjob/${job._id}`}
               >
-                View Details
+                {t("View Details")}
               </Link>
             </div>
           )
