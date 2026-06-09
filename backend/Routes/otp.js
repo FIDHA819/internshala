@@ -7,7 +7,12 @@ const otpStore = new Map();
 router.post("/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
-
+ console.log("REQUEST EMAIL:", email);
+    console.log("ENV EMAIL:", process.env.EMAIL);
+    console.log(
+      "PASSWORD EXISTS:",
+      !!process.env.EMAIL_PASSWORD
+    );
     const otp = Math.floor(
       100000 + Math.random() * 900000
     ).toString();
