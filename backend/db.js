@@ -1,13 +1,19 @@
 const mongoose = require("mongoose");
 
 async function connect() {
-  console.log("Connecting Mongo...");
+  try {
+    console.log("Connecting Mongo...");
 
-  await mongoose.connect(
-    process.env.DATABASE_URL
-  );
+    await mongoose.connect(process.env.DATABASE_URL, {
+      serverSelectionTimeoutMS: 30000,
+    });
 
-  console.log("database connected");
+    console.log("database connected");
+  } catch (err) {
+    console.log("MONGO ERROR:");
+    console.log(err.message);
+    throw err;
+  }
 }
 
 module.exports = { connect };
