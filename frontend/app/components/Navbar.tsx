@@ -80,7 +80,7 @@ toast.success(
 
   try {
     const res = 
-    await axios.post("https://internshala-9pfr.onrender.com/api/send-otp", { email: user.email,otp: otpCode });
+    await axios.post("https://internshala-9pfr.onrender.com/api/otpsend-otp", { email: user.email,otp: otpCode });
     // await axios.post(
     //   "http://localhost:5000/api/otp/verify-otp",
     //   {
