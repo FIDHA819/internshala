@@ -2,21 +2,24 @@ const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
 
+// Add this right at the top to load variables into this module context
+require("dotenv").config();
+
 const otpStore = new Map();
 
 router.post("/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
- console.log("REQUEST EMAIL:", email);
-    console.log("ENV EMAIL:", process.env.EMAIL);
-    console.log(
-      "PASSWORD EXISTS:",
-      !!process.env.EMAIL_PASSWORD
-    );
-    const otp = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
 
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email parameter is required." });
+    }
+
+    console.log("REQUEST TARGET EMAIL:", email);
+    console.log("SENDER ENV EMAIL:", process.env.EMAIL);
+    console.log("SENDER PASSWORD LOADED:", !!process.env.EMAIL_PASSWORD);
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore.set(email, otp);
 
     const transporter = nodemailer.createTransport({
@@ -30,19 +33,19 @@ router.post("/send-otp", async (req, res) => {
     await transporter.sendMail({
       from: process.env.EMAIL,
       to: email,
-      subject: "Language Verification OTP",
-      text: `Your OTP is ${otp}`,
+      subject: "Verification OTP - Intern Area",
+      text: `Your dynamic security authorization token code is ${otp}. Please do not share this code.`,
     });
-    console.log("GENERATED OTP:", otp);
-console.log("EMAIL:", email);
 
-    res.json({
+    console.log("GENERATED OTP:", otp);
+
+    return res.json({
       success: true,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Nodemailer Operational Failure:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
@@ -54,18 +57,19 @@ router.post("/verify-otp", (req, res) => {
 
   const savedOtp = otpStore.get(email);
 
-  console.log("EMAIL:", email);
-  console.log("USER OTP:", otp);
-  console.log("SAVED OTP:", savedOtp);
+  console.log("VERIFY LOGS -> Email:", email, " | Input OTP:", otp, " | Saved OTP:", savedOtp);
 
-  if (savedOtp !== otp) {
+  if (!savedOtp || savedOtp !== otp) {
     return res.status(400).json({
       success: false,
-      message: "Invalid OTP"
+      message: "Invalid or expired OTP"
     });
   }
 
-  res.json({
+  // Clear token once successfully authenticated so it cannot be used again
+  otpStore.delete(email);
+
+  return res.json({
     success: true
   });
 });

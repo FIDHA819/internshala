@@ -51,7 +51,7 @@ export default function postInternship(){
       setisloading(true);
       const res = await axios.post(
         // "https://internshala-clone-y2p2.onrender.com/api/internship"
-         'https://internshala-9pfr.onrender.com/api/internship'
+         `${process.env.NEXT_PUBLIC_API_URL}/internship`
         , formData);
       toast.success("internship  posted successfuly");
       router.push("/adminpanel");

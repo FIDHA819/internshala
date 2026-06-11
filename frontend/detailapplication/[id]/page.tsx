@@ -15,7 +15,7 @@ export default function detailapplicationpage() {
       try {
         setloading(true);
         const res = await axios.get(
-          `https://internshala-9pfr.onrender.com/api/application/${id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/application/${id}`
         );
         console.log(res.data);
         setdata(res.data);

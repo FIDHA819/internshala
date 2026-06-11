@@ -22,6 +22,10 @@ app.use(
     limit: "50mb",
   })
 );
+app.use(
+  "/uploads",
+  express.static("uploads")
+);
 
 app.use(
   bodyParser.urlencoded({

@@ -43,7 +43,7 @@ export default function Jobpage() {
 
         const res =
           await axios.get(
-            "https://internshala-9pfr.onrender.com/api/job"
+            `${process.env.NEXT_PUBLIC_API_URL}/job`
           );
 
         setJobs(res.data);

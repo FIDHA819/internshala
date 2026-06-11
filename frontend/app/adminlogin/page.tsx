@@ -30,7 +30,7 @@ export default function adminlogin() {
       setisloading(true);
       const res = await axios.post(
         // "https://internshala-clone-y2p2.onrender.com/api/admin/adminlogin",
-        "https://internshala-9pfr.onrender.com/api/admin/adminlogin",
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/adminlogin`,
         formadata
       );
       toast.success("logged in successfuly");

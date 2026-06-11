@@ -100,7 +100,7 @@ export default function Detailjob() {
 
           const res =
             await axios.get(
-              `https://internshala-9pfr.onrender.com/api/job/${id}`
+              `${process.env.NEXT_PUBLIC_API_URL}/job/${id}`
             );
 
           setjob(
@@ -177,7 +177,7 @@ export default function Detailjob() {
           };
 
         await axios.post(
-          "https://internshala-9pfr.onrender.com/api/application",
+          `${process.env.NEXT_PUBLIC_API_URL}/application`,
 
           data
         );

@@ -74,7 +74,7 @@ export default function Detailinternshippage() {
 
           const res =
             await axios.get(
-              `https://internshala-9pfr.onrender.com/api/internship/${id}`
+              `${process.env.NEXT_PUBLIC_API_URL}/internship/${id}`
             );
 
           setinternship(
@@ -151,7 +151,7 @@ export default function Detailinternshippage() {
           };
 
         await axios.post(
-          "https://internshala-9pfr.onrender.com/api/application",
+          `${process.env.NEXT_PUBLIC_API_URL}/application`,
 
           applicationData
         );

@@ -56,7 +56,7 @@ export default function Navbar() {
 
       // Trigger dispatch request to user's registered account address
       try {
-        await axios.post("https://internshala-9pfr.onrender.com/api/otp/send-otp", { email: user.email });
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/otp/send-otp`, { email: user.email });
   //     await axios.post(
   // "http://localhost:5000/api/otp/send-otp",
   // {
@@ -80,7 +80,7 @@ toast.success(
 
   try {
     const res = 
-    await axios.post("https://internshala-9pfr.onrender.com/api/otp/send-otp", { email: user.email,otp: otpCode });
+    await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/otp/send-otp`, { email: user.email,otp: otpCode });
     // await axios.post(
     //   "http://localhost:5000/api/otp/verify-otp",
     //   {
@@ -118,28 +118,39 @@ toast.success(
           </Link>
 
           {/* Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link
-              href="/internship"
-              className="text-gray-700 hover:text-blue-600"
-            >
-              Internships
-            </Link>
+          {/* Navigation */}
+<div className="hidden md:flex items-center gap-8">
+  <Link
+    href="/internship"
+    className="text-gray-700 hover:text-blue-600 font-medium"
+  >
+    Internships
+  </Link>
 
-            <Link
-              href="/job"
-              className="text-gray-700 hover:text-blue-600"
-            >
-              Jobs
-            </Link>
+  <Link
+    href="/job"
+    className="text-gray-700 hover:text-blue-600 font-medium"
+  >
+    Jobs
+  </Link>
 
-            <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
-              <Search size={16} className="text-gray-400" />
-              <input
-                placeholder="Search opportunities..."
-                className="ml-2 bg-transparent outline-none text-sm w-48"
-              />
-            </div>
+  {/* NEW: Premium Resume Builder Entry Point */}
+  <Link
+    href="/resume"
+    className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
+  >
+    Build Resume ✨
+  </Link>
+
+  <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+    <Search size={16} className="text-gray-400" />
+    <input
+      placeholder="Search opportunities..."
+      className="ml-2 bg-transparent outline-none text-sm w-48"
+    />
+  </div>
+  
+  {/* Language dropdown continues below... */}
 
             {/* Language Selector Selector Element */}
             <div className="flex items-center gap-1 border rounded px-2 py-1 bg-gray-50">

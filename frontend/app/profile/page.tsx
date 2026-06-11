@@ -52,7 +52,7 @@ export default function Profilepage() {
 
           const res =
             await axios.get(
-              "https://internshala-9pfr.onrender.com/api/application"
+              `${process.env.NEXT_PUBLIC_API_URL}/application`
             );
 
           const userApplications =

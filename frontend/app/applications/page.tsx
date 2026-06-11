@@ -31,7 +31,7 @@ export default function applicationpage() {
   useEffect(() => {
     const fetchdata = async () => {
       try {
-        const res = await axios.get("https://internshala-9pfr.onrender.com/api/application");
+        const res = await axios.get("`${process.env.NEXT_PUBLIC_API_URL}/application");
         setdata(res.data);
       } catch (error) {
         console.log(error);
@@ -52,7 +52,7 @@ export default function applicationpage() {
   const handleacceptandreject = async (id: any, action: any) => {
     try {
       const res = await axios.put(
-        `https://internshala-9pfr.onrender.com/api/application/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/application/${id}`,
         { action }
       );
       const updateappliacrtion = data.map((app: any) =>
