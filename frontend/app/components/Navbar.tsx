@@ -12,7 +12,6 @@ import axios from "axios";
 import { selectuser } from "../../Feature/userSlice";
 import i18n from "../../i18n"; // Path to your i18n configuration
 
-
 export default function Navbar() {
   const user = useSelector(selectuser);
 
@@ -57,18 +56,10 @@ export default function Navbar() {
       // Trigger dispatch request to user's registered account address
       try {
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/otp/send-otp`, { email: user.email });
-  //     await axios.post(
-  // "http://localhost:5000/api/otp/send-otp",
-  // {
-  //   email: user.email
-  // }
-
-
-toast.success(
-  "OTP sent to your email"
-);
+        toast.success("OTP sent to your email");
       } catch (err) {
         console.error("Failed to route token dispatch:", err);
+        toast.error("Failed to send OTP code.");
       }
     } else {
       i18n.changeLanguage(lang);
@@ -76,31 +67,27 @@ toast.success(
   };
 
   const handleOtpVerify = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const res = 
-    await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/otp/send-otp`, { email: user.email,otp: otpCode });
-    // await axios.post(
-    //   "http://localhost:5000/api/otp/verify-otp",
-    //   {
-    //     email: user?.email,
-    //     otp: otpCode,
-    //   }
-    // );
+    try {
+      // FIX: Changed endpoint to verify-otp instead of re-sending an OTP
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/otp/verify-otp`, { 
+        email: user?.email, 
+        otp: otpCode 
+      });
 
-    if (res.data.success) {
-      i18n.changeLanguage(pendingLang);
-      setShowOtpModal(false);
-      setOtpError("");
-
-      toast.success("Language switched to French!");
+      if (res.data.success) {
+        i18n.changeLanguage(pendingLang);
+        setShowOtpModal(false);
+        setOtpError("");
+        toast.success("Language switched to French!");
+      }
+    } catch (error: any) {
+      setOtpError("Invalid OTP. Please try again.");
+      toast.error("Invalid OTP. Please try again.");
     }
-  } catch (error: any) {
-    setOtpError("Invalid OTP. Please try again.");
-    toast.error("Invalid OTP. Please try again.");
-  }
-};
+  };
+
   return (
     <nav className="bg-white shadow-md relative z-50">
       <div className="max-w-7xl mx-auto px-4">
@@ -118,41 +105,46 @@ toast.success(
           </Link>
 
           {/* Navigation */}
-          {/* Navigation */}
-<div className="hidden md:flex items-center gap-8">
-  <Link
-    href="/internship"
-    className="text-gray-700 hover:text-blue-600 font-medium"
-  >
-    Internships
-  </Link>
+          <div className="hidden md:flex items-center gap-6">
+            <Link
+              href="/internship"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors text-sm"
+            >
+              Internships
+            </Link>
 
-  <Link
-    href="/job"
-    className="text-gray-700 hover:text-blue-600 font-medium"
-  >
-    Jobs
-  </Link>
+            <Link
+              href="/job"
+              className="text-gray-700 hover:text-blue-600 font-medium transition-colors text-sm"
+            >
+              Jobs
+            </Link>
 
-  {/* NEW: Premium Resume Builder Entry Point */}
-  <Link
-    href="/resume"
-    className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
-  >
-    Build Resume ✨
-  </Link>
+            {/* ADDED: Forgot Password Link */}
+            <Link
+              href="/forgot-password"
+              className="text-gray-500 hover:text-blue-600 font-medium transition-colors text-sm"
+            >
+              Forgot Password?
+            </Link>
 
-  <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
-    <Search size={16} className="text-gray-400" />
-    <input
-      placeholder="Search opportunities..."
-      className="ml-2 bg-transparent outline-none text-sm w-48"
-    />
-  </div>
-  
-  {/* Language dropdown continues below... */}
+            {/* Premium Resume Builder Entry Point */}
+            <Link
+              href="/resume"
+              className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity"
+            >
+              Build Resume ✨
+            </Link>
 
-            {/* Language Selector Selector Element */}
+            <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+              <Search size={16} className="text-gray-400" />
+              <input
+                placeholder="Search opportunities..."
+                className="ml-2 bg-transparent outline-none text-sm w-40 lg:w-48 text-black"
+              />
+            </div>
+            
+            {/* Language Selector Element */}
             <div className="flex items-center gap-1 border rounded px-2 py-1 bg-gray-50">
               <Globe size={16} className="text-gray-500" />
               <select 
@@ -170,7 +162,7 @@ toast.success(
             </div>
           </div>
 
-          {/* Auth */}
+          {/* Auth Controls */}
           <div className="flex items-center gap-4">
             {user ? (
               <>
@@ -180,13 +172,13 @@ toast.success(
                     alt="profile"
                     width={40}
                     height={40}
-                    className="rounded-full"
+                    className="rounded-full border border-gray-200"
                   />
                 </Link>
 
                 <button
                   onClick={handlelogout}
-                  className="px-4 py-2 rounded-lg hover:bg-gray-100"
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                   Logout
                 </button>
@@ -195,14 +187,14 @@ toast.success(
               <>
                 <button
                   onClick={handlelogin}
-                  className="border rounded-lg px-4 py-2 hover:bg-gray-50"
+                  className="border rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Continue with Google
                 </button>
 
                 <Link
                   href="/adminlogin"
-                  className="text-gray-700"
+                  className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors"
                 >
                   Admin
                 </Link>
@@ -218,7 +210,7 @@ toast.success(
           <div className="bg-white p-6 rounded-xl border max-w-sm w-full text-black shadow-xl mx-4">
             <h3 className="text-xl font-bold mb-2">Verify Security Language Shift</h3>
             <p className="text-sm text-gray-600 mb-4">
-              A  authentication code was targeted to: <span className="font-semibold text-blue-600 break-all">{user?.email}</span>.
+              An authentication code was targeted to: <span className="font-semibold text-blue-600 break-all">{user?.email}</span>.
             </p>
             <form onSubmit={handleOtpVerify} className="space-y-4">
               <input
@@ -227,20 +219,20 @@ toast.success(
                 maxLength={6}
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                className="w-full border rounded p-2 text-center text-lg tracking-widest outline-none"
+                className="w-full border rounded p-2 text-center text-lg tracking-widest outline-none focus:border-blue-600"
               />
               {otpError && <p className="text-red-500 text-xs font-medium">{otpError}</p>}
               <div className="flex gap-2 justify-end">
                 <button
                   type="button"
                   onClick={() => setShowOtpModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 text-sm font-medium"
+                  className="px-4 py-2 rounded bg-gray-200 text-sm font-medium text-gray-800 hover:bg-gray-300 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
+                  className="px-4 py-2 rounded bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
                   Confirm Change
                 </button>
