@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
-
+import { toast } from "react-toastify";
 import React, {
   useEffect,
   useState,
@@ -26,6 +26,7 @@ import {
   selectuser,
 } from "../../Feature/userSlice";
 
+
 export default function Profilepage() {
 
   const user =
@@ -40,6 +41,8 @@ export default function Profilepage() {
     loading,
     setLoading,
   ] = useState(true);
+  const [friends, setFriends] = useState([]);
+const [requests, setRequests] = useState([]);
 
   useEffect(() => {
 
@@ -87,6 +90,51 @@ export default function Profilepage() {
     }
 
   }, [user]);
+  useEffect(() => {
+  fetchFriends();
+}, []);
+
+const fetchFriends = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/friend-requests`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setFriends(res.data.friends);
+    setRequests(res.data.requests);
+  } catch (err) {
+    console.log(err);
+  }
+};
+const acceptRequest = async (senderId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/users/friend-request/accept/${senderId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    toast.success(res.data.message);
+
+    fetchFriends();
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 
   const total =
     applications.length;
@@ -257,6 +305,50 @@ export default function Profilepage() {
               </div>
 
             </div>
+            <div className="mt-10">
+  <h2 className="text-xl font-bold mb-4">
+    Friend Requests
+  </h2>
+
+  {requests.length === 0 ? (
+    <p>No pending requests</p>
+  ) : (
+    requests.map((request) => (
+      <div
+        key={request._id}
+        className="flex justify-between items-center border p-3 rounded mb-2"
+      >
+        <span>{request.email}</span>
+
+        <button
+          onClick={() => acceptRequest(request._id)}
+          className="bg-green-600 text-white px-3 py-1 rounded"
+        >
+          Accept
+        </button>
+      </div>
+
+    ))
+  )}
+</div>
+<div className="mt-10">
+  <h2 className="text-xl font-bold mb-4">
+    Friends
+  </h2>
+
+  {friends.length === 0 ? (
+    <p>No friends yet</p>
+  ) : (
+    friends.map((friend) => (
+      <div
+        key={friend._id}
+        className="border p-3 rounded mb-2"
+      >
+        {friend.email}
+      </div>
+    ))
+  )}
+</div>
 
             {/* Buttons */}
 
