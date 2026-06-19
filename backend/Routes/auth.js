@@ -9,7 +9,8 @@ const User        = require("../Model/User");
 const verifyToken = require("../Middleware/verifyToken");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
 // ─── In-memory OTP store: email → { otp, env, expiresAt } ────────────────────
 // Replace with Redis in production.
 const loginOtpStore = new Map();
@@ -60,17 +61,17 @@ const createTransporter = () =>
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
-    family: 4, // Force IPv4
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
     },
+    family: 4,
     tls: {
       rejectUnauthorized: false,
     },
-    connectionTimeout: 30000,
-    greetingTimeout: 30000,
-    socketTimeout: 30000,
+    connectionTimeout: 60000,
+    greetingTimeout: 60000,
+    socketTimeout: 60000,
   });
 const signToken = (userId) =>
   jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "7d" });
@@ -101,7 +102,13 @@ const sendLoginOtp = async (user, email, env) => {
   user.loginHistory.push({ ...env, status: "OTP Pending" });
   await user.save();
 
-  const transporter = createTransporter();
+console.log("EMAIL:", process.env.EMAIL);
+console.log("EMAIL_PASSWORD exists:", !!process.env.EMAIL_PASSWORD);
+
+const transporter = createTransporter();
+
+console.log("Verifying SMTP...");
+
 
   try {
     await transporter.verify();
