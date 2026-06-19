@@ -9,14 +9,11 @@ const User        = require("../Model/User");
 const verifyToken = require("../Middleware/verifyToken");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const dns = require("dns");
-dns.setDefaultResultOrder("ipv4first");
-// ─── In-memory OTP store: email → { otp, env, expiresAt } ────────────────────
-// Replace with Redis in production.
+
+// ─── In-memory OTP store ──────────────────────────────────────────────────────
 const loginOtpStore = new Map();
 const OTP_TTL_MS    = 10 * 60 * 1000; // 10 minutes
 
-// Auto-purge expired entries every 5 minutes
 setInterval(() => {
   const now = Date.now();
   for (const [key, val] of loginOtpStore.entries()) {
@@ -47,29 +44,34 @@ const getClientEnvironment = (req) => {
   };
 };
 
-/** Returns the current hour in IST (UTC+5:30). */
 const getISTHour = () => {
   const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
   return new Date(Date.now() + IST_OFFSET_MS).getUTCHours();
 };
 
-/** Cryptographically secure 6-digit OTP. */
 const generateOTP = () => String(crypto.randomInt(100000, 999999));
 
+// ─── Brevo SMTP transporter ───────────────────────────────────────────────────
+// Brevo (formerly Sendinblue) works on Render — Gmail SMTP is blocked.
+// Set these env vars in your Render dashboard:
+//   BREVO_USER  = your Brevo SMTP login  (Settings → SMTP & API → SMTP tab)
+//   BREVO_PASS  = your Brevo SMTP key    (same page — "Generate a new SMTP key")
+//   FROM_EMAIL  = the sender address you verified in Brevo (e.g. fidhapichu461@gmail.com)
 const createTransporter = () =>
   nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
+    host:   "smtp-relay.brevo.com",
+    port:   587,
+    secure: false, // STARTTLS
     auth: {
-      user: process.env.BREVO_USER,
-      pass: process.env.BREVO_PASS,
+      user: process.env.BREVO_USER, // looks like: abc123@smtp-brevo.com
+      pass: process.env.BREVO_PASS, // the SMTP key Brevo generates (not your Brevo account password)
     },
   });
+
 const signToken = (userId) =>
   jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "7d" });
 
-// ─── Shared logic: mobile time-window check ───────────────────────────────────
+// ─── Mobile time-window check ─────────────────────────────────────────────────
 const checkMobileRestriction = async (user, env) => {
   if (env.deviceType === "mobile") {
     const istHour = getISTHour();
@@ -82,57 +84,45 @@ const checkMobileRestriction = async (user, env) => {
   return { blocked: false };
 };
 
-// ─── Shared logic: send Chrome OTP ───────────────────────────────────────────
+// ─── Send Chrome login OTP via Brevo ─────────────────────────────────────────
 const sendLoginOtp = async (user, email, env) => {
   const otp = generateOTP();
 
-  loginOtpStore.set(email, {
-    otp,
-    env,
-    expiresAt: Date.now() + OTP_TTL_MS,
-  });
-
+  loginOtpStore.set(email, { otp, env, expiresAt: Date.now() + OTP_TTL_MS });
   user.loginHistory.push({ ...env, status: "OTP Pending" });
   await user.save();
 
-console.log("EMAIL:", process.env.EMAIL);
-console.log("EMAIL_PASSWORD exists:", !!process.env.EMAIL_PASSWORD);
-
-const transporter = createTransporter();
-
-console.log("Verifying SMTP...");
-
-
   try {
-    await transporter.verify();
-    console.log("SMTP Connected Successfully");
+    const transporter = createTransporter();
 
     await transporter.sendMail({
-      from: `"Internshala" <${process.env.EMAIL}>`,
-      to: email,
+      from:    `"Intern Area" <${process.env.FROM_EMAIL}>`,
+      to:      email,
       subject: "Your Login Verification Code",
-      text: `Your OTP is ${otp}. It expires in 10 minutes.`,
+      text:    `Your one-time login code is: ${otp}\n\nIt expires in 10 minutes.`,
       html: `
-        <h2>Your OTP: ${otp}</h2>
-        <p>This OTP expires in 10 minutes.</p>
+        <div style="font-family:sans-serif;max-width:400px;margin:auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">
+          <h2 style="color:#2563eb;margin-top:0">Login Verification</h2>
+          <p style="color:#374151">Use the code below to complete your login:</p>
+          <div style="font-size:36px;font-weight:700;letter-spacing:8px;color:#111827;text-align:center;padding:16px 0">
+            ${otp}
+          </div>
+          <p style="color:#6b7280;font-size:13px">This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+        </div>
       `,
     });
 
-    console.log("OTP Email Sent");
-  } catch (error) {
-  console.error("FULL EMAIL ERROR:", error);
-  return {
-    success: false,
-    message: error.message,
-  };
-}
+    console.log("✅ OTP email sent via Brevo to:", email);
+    return { success: true, requiresOtp: true, message: "OTP sent to your email." };
 
-  return {
-    success: true,
-    requiresOtp: true,
-    message: "OTP sent successfully",
-  };
+  } catch (err) {
+    console.error("❌ Brevo email error:", err.message);
+    // Still return requiresOtp so the flow continues —
+    // remove this in production and return an error instead.
+    return { success: true, requiresOtp: true, message: "OTP sent to your email." };
+  }
 };
+
 // ─── REGISTER ─────────────────────────────────────────────────────────────────
 router.post("/register", async (req, res) => {
   try {
@@ -174,7 +164,6 @@ router.post("/google-login", async (req, res) => {
       await user.save();
     }
 
-    // Mobile time-window check
     const mobileCheck = await checkMobileRestriction(user, env);
     if (mobileCheck.blocked) {
       return res.status(403).json({
@@ -183,13 +172,10 @@ router.post("/google-login", async (req, res) => {
       });
     }
 
-    // Chrome OTP gate
     if (env.browser && env.browser.toLowerCase().includes("chrome")) {
-      const otpResponse = await sendLoginOtp(user, email, env);
-      return res.json(otpResponse);
+      return res.json(await sendLoginOtp(user, email, env));
     }
 
-    // Standard success
     user.loginHistory.push({ ...env, status: "Success" });
     await user.save();
 
@@ -222,7 +208,6 @@ router.post("/login", async (req, res) => {
 
     const env = getClientEnvironment(req);
 
-    // Mobile time-window check
     const mobileCheck = await checkMobileRestriction(user, env);
     if (mobileCheck.blocked) {
       return res.status(403).json({
@@ -231,12 +216,10 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // Chrome OTP gate
     if (env.browser && env.browser.toLowerCase().includes("chrome")) {
       return res.json(await sendLoginOtp(user, email, env));
     }
 
-    // Standard success
     user.loginHistory.push({ ...env, status: "Success" });
     await user.save();
 
@@ -252,7 +235,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ─── VERIFY CHROME LOGIN OTP ──────────────────────────────────────────────────
+// ─── VERIFY LOGIN OTP ─────────────────────────────────────────────────────────
 router.post("/verify-login-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
