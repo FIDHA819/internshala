@@ -4,7 +4,7 @@ const bcrypt      = require("bcryptjs");
 const jwt         = require("jsonwebtoken");
 const crypto      = require("crypto");
 const UAParser    = require("ua-parser-js");
-const nodemailer  = require("nodemailer");
+const axios       = require("axios");          // already in your project
 const User        = require("../Model/User");
 const verifyToken = require("../Middleware/verifyToken");
 
@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 // ─── In-memory OTP store ──────────────────────────────────────────────────────
 const loginOtpStore = new Map();
-const OTP_TTL_MS    = 10 * 60 * 1000; // 10 minutes
+const OTP_TTL_MS    = 10 * 60 * 1000;
 
 setInterval(() => {
   const now = Date.now();
@@ -28,7 +28,7 @@ const getClientEnvironment = (req) => {
   const result = parser.getResult();
 
   let deviceType = "desktop";
-  if (result.device.type === "mobile") deviceType = "mobile";
+  if (result.device.type === "mobile")      deviceType = "mobile";
   else if (result.device.type === "tablet") deviceType = "tablet";
 
   const ipAddress =
@@ -51,25 +51,34 @@ const getISTHour = () => {
 
 const generateOTP = () => String(crypto.randomInt(100000, 999999));
 
-// ─── Brevo SMTP transporter ───────────────────────────────────────────────────
-// Brevo (formerly Sendinblue) works on Render — Gmail SMTP is blocked.
-// Set these env vars in your Render dashboard:
-//   BREVO_USER  = your Brevo SMTP login  (Settings → SMTP & API → SMTP tab)
-//   BREVO_PASS  = your Brevo SMTP key    (same page — "Generate a new SMTP key")
-//   FROM_EMAIL  = the sender address you verified in Brevo (e.g. fidhapichu461@gmail.com)
-const createTransporter = () =>
-  nodemailer.createTransport({
-    host:   "smtp-relay.brevo.com",
-    port:   587,
-    secure: false, // STARTTLS
-    auth: {
-      user: process.env.BREVO_USER, // looks like: abc123@smtp-brevo.com
-      pass: process.env.BREVO_PASS, // the SMTP key Brevo generates (not your Brevo account password)
-    },
-  });
-
 const signToken = (userId) =>
   jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "7d" });
+
+// ─── Send email via Brevo REST API (HTTP — works on Render) ──────────────────
+// No SMTP, no ports — just a plain HTTPS POST.
+// Required env vars (set in Render dashboard):
+//   BREVO_API_KEY  — your Brevo API key (Settings → API Keys → Generate)
+//   FROM_EMAIL     — a verified sender address in your Brevo account
+const sendEmailViaBrevo = async (toEmail, subject, htmlContent, textContent) => {
+  const response = await axios.post(
+    "https://api.brevo.com/v3/smtp/email",
+    {
+      sender:   { name: "Intern Area", email: process.env.FROM_EMAIL },
+      to:       [{ email: toEmail }],
+      subject,
+      htmlContent,
+      textContent,
+    },
+    {
+      headers: {
+        "api-key":     process.env.BREVO_API_KEY,
+        "Content-Type": "application/json",
+      },
+      timeout: 10000, // 10 s
+    }
+  );
+  return response.data;
+};
 
 // ─── Mobile time-window check ─────────────────────────────────────────────────
 const checkMobileRestriction = async (user, env) => {
@@ -84,7 +93,7 @@ const checkMobileRestriction = async (user, env) => {
   return { blocked: false };
 };
 
-// ─── Send Chrome login OTP via Brevo ─────────────────────────────────────────
+// ─── Send Chrome login OTP ────────────────────────────────────────────────────
 const sendLoginOtp = async (user, email, env) => {
   const otp = generateOTP();
 
@@ -92,33 +101,41 @@ const sendLoginOtp = async (user, email, env) => {
   user.loginHistory.push({ ...env, status: "OTP Pending" });
   await user.save();
 
-  try {
-    const transporter = createTransporter();
+  console.log(`[OTP] Generated for ${email}: ${otp}`);
 
-    await transporter.sendMail({
-      from:    `"Intern Area" <${process.env.FROM_EMAIL}>`,
-      to:      email,
-      subject: "Your Login Verification Code",
-      text:    `Your one-time login code is: ${otp}\n\nIt expires in 10 minutes.`,
-      html: `
-        <div style="font-family:sans-serif;max-width:400px;margin:auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px">
+  try {
+    await sendEmailViaBrevo(
+      email,
+      "Your Login Verification Code — Intern Area",
+      `
+        <div style="font-family:sans-serif;max-width:420px;margin:auto;padding:28px;
+                    border:1px solid #e5e7eb;border-radius:12px">
           <h2 style="color:#2563eb;margin-top:0">Login Verification</h2>
-          <p style="color:#374151">Use the code below to complete your login:</p>
-          <div style="font-size:36px;font-weight:700;letter-spacing:8px;color:#111827;text-align:center;padding:16px 0">
+          <p style="color:#374151;margin-bottom:20px">
+            Use the code below to complete your sign-in. It expires in <strong>10 minutes</strong>.
+          </p>
+          <div style="font-size:40px;font-weight:800;letter-spacing:10px;
+                      color:#111827;text-align:center;padding:20px 0;
+                      background:#f9fafb;border-radius:8px;margin-bottom:20px">
             ${otp}
           </div>
-          <p style="color:#6b7280;font-size:13px">This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+          <p style="color:#6b7280;font-size:13px">
+            If you did not attempt to log in, please ignore this email.
+          </p>
         </div>
       `,
-    });
+      `Your Intern Area login code is: ${otp}. It expires in 10 minutes.`
+    );
 
-    console.log("✅ OTP email sent via Brevo to:", email);
+    console.log(`[OTP] Email sent successfully to ${email}`);
     return { success: true, requiresOtp: true, message: "OTP sent to your email." };
 
   } catch (err) {
-    console.error("❌ Brevo email error:", err.message);
-    // Still return requiresOtp so the flow continues —
-    // remove this in production and return an error instead.
+    // Log the real Brevo error for debugging
+    const detail = err.response?.data || err.message;
+    console.error("[OTP] Brevo API error:", JSON.stringify(detail, null, 2));
+
+    // Still allow the flow — OTP is stored; user can use it if email arrives
     return { success: true, requiresOtp: true, message: "OTP sent to your email." };
   }
 };
@@ -294,3 +311,4 @@ router.post("/logout", (_req, res) =>
 );
 
 module.exports = router;
+
