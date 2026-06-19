@@ -38,6 +38,7 @@ router.post("/send-otp", async (req, res) => {
         pass: process.env.EMAIL_PASSWORD,
       },
     });
+    
 
     const info = await transporter.sendMail({
       from: process.env.EMAIL,

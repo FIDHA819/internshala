@@ -57,10 +57,17 @@ const generateOTP = () => String(crypto.randomInt(100000, 999999));
 
 const createTransporter = () =>
   nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
-
 const signToken = (userId) =>
   jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "7d" });
 
