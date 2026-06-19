@@ -62,6 +62,7 @@ export default function Detailinternshippage() {
     coverLetter,
     setCoverLetter,
   ] = useState("");
+  const [alreadyApplied, setAlreadyApplied] = useState(false);
 
   useEffect(() => {
 
@@ -106,81 +107,89 @@ export default function Detailinternshippage() {
     }
 
   }, [id]);
+  useEffect(() => {
+  const checkApplied = async () => {
+    const token = localStorage.getItem("token");
 
-  const handlesubmitapplication =
-    async () => {
+    if (!token || !id) return;
 
-      if (
-        !coverLetter.trim()
-      ) {
-        toast.error(
-          "Please write cover letter"
-        );
+    try {
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/application/check/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        return;
+      setAlreadyApplied(res.data.applied);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  checkApplied();
+}, [id]);
+
+  const handlesubmitapplication = async () => {
+  if (!coverLetter.trim()) {
+    toast.error("Please write cover letter");
+    return;
+  }
+
+  if (!availability) {
+    toast.error("Select availability");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    toast.error("Please login first");
+    return;
+  }
+
+  try {
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/application`,
+      {
+        company: internshipData.company,
+        category: internshipData.category,
+        coverLetter,
+        availability,
+        Application: internshipData,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
+toast.success(
+  res.data.message || "Application submitted successfully"
+);
 
-      if (
-        !availability
-      ) {
-        toast.error(
-          "Select availability"
-        );
+setAlreadyApplied(true);
 
-        return;
-      }
+setIsModalOpen(false);
 
-      try {
+    
 
-        const applicationData =
-          {
-            category:
-              internshipData.category,
+    
 
-            company:
-              internshipData.company,
+  } catch (error: any) {
+    console.log(error);
 
-            coverLetter,
+    toast.error(
+      error.response?.data?.message ||
+      "Application submission failed"
+    );
+  }
+};
 
-            user,
 
-            Application:
-              id,
 
-            availability,
-          };
-
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/application`,
-
-          applicationData
-        );
-
-        toast.success(
-          "Application submitted"
-        );
-
-        setIsModalOpen(
-          false
-        );
-
-        router.push(
-          "/internship"
-        );
-
-      } catch (
-        error
-      ) {
-
-        console.log(
-          error
-        );
-
-        toast.error(
-          "Submission failed"
-        );
-      }
-    };
 
   if (
     loading
@@ -331,18 +340,29 @@ export default function Detailinternshippage() {
 
         <div className="p-6">
 
-          <button
-            onClick={() =>
-              setIsModalOpen(
-                true
-              )
-            }
-            className="bg-blue-600 text-white px-6 py-3 rounded"
-          >
-            Apply Now
-          </button>
+  {alreadyApplied ? (
 
-        </div>
+    <button
+      disabled
+      className="bg-green-600 text-white px-6 py-3 rounded cursor-not-allowed"
+    >
+      Applied ✓
+    </button>
+
+  ) : (
+
+    <button
+      onClick={() =>
+        setIsModalOpen(true)
+      }
+      className="bg-blue-600 text-white px-6 py-3 rounded"
+    >
+      Apply Now
+    </button>
+
+  )}
+
+</div>
 
       </div>
 

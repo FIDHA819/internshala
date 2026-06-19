@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Internship = require("../Model/Internship");
+const verifyToken = require("../Middleware/verifyToken");
+const checkApplicationLimit = require("../Middleware/checkApplicationLimit");
 
 router.post("/", async (req, res) => {
   const Internshipdata = new Internship({
@@ -47,4 +49,24 @@ router.get("/:id", async (req, res) => {
     res.status(404).json({ error: "internal server error" });
   }
 });
+router.post(
+  "/apply/:id",
+  verifyToken,
+  checkApplicationLimit,
+  async (req, res) => {
+
+    const user =
+      req.currentUser;
+
+    user.monthlyApplicationCount++;
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message:
+        "Application submitted"
+    });
+  }
+);
 module.exports = router;

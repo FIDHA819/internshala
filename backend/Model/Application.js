@@ -1,19 +1,37 @@
 const mongoose = require("mongoose");
-const Applicationipschema = new mongoose.Schema({
-  company: String,
-  category: String,
-  coverLetter: String,
-  user: Object,
-  createdAt: {
-    type: Date,
-    default: Date.now,
+
+const ApplicationSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
+
+  company: String,
+
+  category: String,
+
+  coverLetter: String,
+
+  availability: String,
+
+  Application: Object,
+
+  resumeId: String,
+
   status: {
     type: String,
     enum: ["accepted", "pending", "rejected"],
     default: "pending",
   },
-  Application: Object,
-  resumeId:String
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
-module.exports = mongoose.model("Application", Applicationipschema);
+
+module.exports = mongoose.model(
+  "Application",
+  ApplicationSchema
+);
