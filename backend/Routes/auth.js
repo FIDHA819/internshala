@@ -120,9 +120,12 @@ const sendLoginOtp = async (user, email, env) => {
 
     console.log("OTP Email Sent");
   } catch (error) {
-    console.error("Email Error:", error);
-    throw new Error("Unable to send OTP email");
-  }
+  console.error("FULL EMAIL ERROR:", error);
+  return {
+    success: false,
+    message: error.message,
+  };
+}
 
   return {
     success: true,
