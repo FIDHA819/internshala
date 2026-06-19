@@ -58,15 +58,19 @@ const generateOTP = () => String(crypto.randomInt(100000, 999999));
 const createTransporter = () =>
   nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
+    family: 4, // Force IPv4
     auth: {
       user: process.env.EMAIL,
       pass: process.env.EMAIL_PASSWORD,
     },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    tls: {
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
   });
 const signToken = (userId) =>
   jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "7d" });
@@ -87,22 +91,45 @@ const checkMobileRestriction = async (user, env) => {
 // ─── Shared logic: send Chrome OTP ───────────────────────────────────────────
 const sendLoginOtp = async (user, email, env) => {
   const otp = generateOTP();
-  loginOtpStore.set(email, { otp, env, expiresAt: Date.now() + OTP_TTL_MS });
+
+  loginOtpStore.set(email, {
+    otp,
+    env,
+    expiresAt: Date.now() + OTP_TTL_MS,
+  });
 
   user.loginHistory.push({ ...env, status: "OTP Pending" });
   await user.save();
 
-  await createTransporter().sendMail({
-    from:    process.env.EMAIL,
-    to:      email,
-    subject: "Your login verification code",
-    text:    `Your one-time login code is: ${otp}\n\nIt expires in 10 minutes.`,
-    html:    `<p>Your login verification code is: <strong style="font-size:22px">${otp}</strong></p><p>Expires in 10 minutes.</p>`,
-  });
+  const transporter = createTransporter();
 
-  return { success: true, requiresOtp: true, message: "OTP sent to your email." };
+  try {
+    await transporter.verify();
+    console.log("SMTP Connected Successfully");
+
+    await transporter.sendMail({
+      from: `"Internshala" <${process.env.EMAIL}>`,
+      to: email,
+      subject: "Your Login Verification Code",
+      text: `Your OTP is ${otp}. It expires in 10 minutes.`,
+      html: `
+        <h2>Your OTP: ${otp}</h2>
+        <p>This OTP expires in 10 minutes.</p>
+      `,
+    });
+
+    console.log("OTP Email Sent");
+  } catch (error) {
+    console.error("Email Error:", error);
+    throw new Error("Unable to send OTP email");
+  }
+
+  return {
+    success: true,
+    requiresOtp: true,
+    message: "OTP sent successfully",
+  };
 };
-
 // ─── REGISTER ─────────────────────────────────────────────────────────────────
 router.post("/register", async (req, res) => {
   try {
