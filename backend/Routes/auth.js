@@ -58,20 +58,13 @@ const generateOTP = () => String(crypto.randomInt(100000, 999999));
 
 const createTransporter = () =>
   nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
     auth: {
-      user: process.env.EMAIL,
-      pass: process.env.EMAIL_PASSWORD,
+      user: process.env.BREVO_USER,
+      pass: process.env.BREVO_PASS,
     },
-    family: 4,
-    tls: {
-      rejectUnauthorized: false,
-    },
-    connectionTimeout: 60000,
-    greetingTimeout: 60000,
-    socketTimeout: 60000,
   });
 const signToken = (userId) =>
   jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "7d" });
