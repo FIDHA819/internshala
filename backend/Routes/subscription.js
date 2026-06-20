@@ -21,18 +21,84 @@ const PLANS = {
 
 // ─── Helper: is current IST time within 10:00–11:00 AM? ──────────────────────
 function isPaymentWindowOpen() {
-  // const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
-  // const istHour = new Date(Date.now() + IST_OFFSET_MS).getUTCHours();
-  // return istHour >= 10 && istHour < 11;
-    return true;
+  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+  const istHour = new Date(Date.now() + IST_OFFSET_MS).getUTCHours();
+  return istHour >= 10 && istHour < 11;
+   
 }
 
 // ─── Helper: send invoice email after successful payment ─────────────────────
-async function sendInvoiceEmail(email, plan, amount, paymentId, expiryDate) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASSWORD },
-  });
+async function sendInvoiceEmail(
+  email,
+  plan,
+  amount,
+  paymentId,
+  expiryDate
+) {
+  const planInfo = PLANS[plan];
+
+  const formattedDate = new Date(
+    expiryDate
+  ).toLocaleDateString("en-IN");
+
+  const response = await fetch(
+    "https://api.brevo.com/v3/smtp/email",
+    {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: "Intern Area",
+          email: process.env.FROM_EMAIL,
+        },
+
+        to: [
+          {
+            email,
+          },
+        ],
+
+        subject: `${planInfo.label} Subscription Confirmed`,
+
+        htmlContent: `
+        <h2>Subscription Activated ✅</h2>
+
+        <p><b>Plan:</b> ${planInfo.label}</p>
+
+        <p><b>Applications / Month:</b> ${planInfo.applications}</p>
+
+        <p><b>Amount Paid:</b> ₹${amount}</p>
+
+        <p><b>Payment ID:</b> ${paymentId}</p>
+
+        <p><b>Valid Until:</b> ${formattedDate}</p>
+
+        <hr/>
+
+        <p>
+          Thank you for subscribing to Intern Area.
+        </p>
+        `,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.log("BREVO ERROR:", data);
+    throw new Error("Invoice email failed");
+  }
+
+  console.log(
+    "SUBSCRIPTION EMAIL SENT:",
+    email
+  );
+}
 
   const planInfo = PLANS[plan];
   const formattedDate = new Date(expiryDate).toLocaleDateString("en-IN", {
