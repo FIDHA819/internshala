@@ -1,11 +1,27 @@
 {
+  "Make your dream career a reality": "让您的梦想职业成为现实",
+  "Start Your Career Journey": "开启您的职业生涯之旅",
+  "Learn From The Best": "向优秀的人学习",
+  "Grow Your Skills": "提升您的技能",
+  "Connect With Top Companies": "与顶尖公司建立联系",
+  "All": "全部",
+  "Big Brands": "知名品牌",
+  "Work From Home": "居家办公",
+  "Part-time": "兼职",
+  "MBA": "工商管理硕士 (MBA)",
+  "Engineering": "工程",
+  "Media": "媒体",
+  "Design": "设计",
+  "Data Science": "数据科学",
   "Internships": "实习",
   "Jobs": "工作",
+  "View Details": "查看详情",
   "Public Space": "公共空间",
   "Plans": "套餐",
   "Forgot Password?": "忘记密码？",
   "Build Resume": "创建简历",
   "Search opportunities...": "搜索机会...",
+  
   "Sign In": "登录",
   "Logout": "退出登录",
   "Admin": "管理员",
@@ -17,4 +33,5 @@
   "Verify Language Change": "验证语言切换",
   "Cancel": "取消",
   "Confirm": "确认"
+
 }

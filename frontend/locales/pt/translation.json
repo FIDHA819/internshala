@@ -1,6 +1,22 @@
 {
+  "Make your dream career a reality": "Torne a carreira dos seus sonhos uma realidade",
+  "Start Your Career Journey": "Comece a sua jornada profissional",
+  "Learn From The Best": "Aprenda com os melhores",
+  "Grow Your Skills": "Desenvolva as suas competências",
+  "Connect With Top Companies": "Conecte-se com as melhores empresas",
+  "All": "Tudo",
+  "Big Brands": "Grandes Marcas",
+  "Work From Home": "Trabalho Remoto",
+  "Part-time": "Meio período",
+  "MBA": "MBA",
+  "Engineering": "Engenharia",
+  "Media": "Mídia",
+  "Design": "Design",
+  "Data Science": "Ciência de Dados",
   "Internships": "Estágios",
   "Jobs": "Empregos",
+  "View Details": "Ver detalhes",
+ 
   "Public Space": "Espaço Público",
   "Plans": "Planos",
   "Forgot Password?": "Esqueceu a senha?",
@@ -17,4 +33,5 @@
   "Verify Language Change": "Verificar mudança de idioma",
   "Cancel": "Cancelar",
   "Confirm": "Confirmar"
+
 }
