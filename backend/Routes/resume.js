@@ -20,18 +20,28 @@ const razorpay = new Razorpay({
 // ─── CREATE ORDER (₹50) ───────────────────────────────────────────────────────
 router.post("/create-order", verifyToken, async (req, res) => {
   try {
+    console.log("CREATE ORDER REQUEST");
+
     const order = await razorpay.orders.create({
-      amount:   50 * 100, // ₹50 in paise
+      amount: 5000,
       currency: "INR",
-      receipt:  `resume_${Date.now()}`,
+      receipt: `resume_${Date.now()}`,
     });
-    return res.json({ success: true, order });
+
+    console.log("ORDER CREATED", order.id);
+
+    return res.json({
+      success: true,
+      order,
+    });
   } catch (err) {
-    console.error("Resume order error:", err);
-    return res.status(500).json({ success: false, message: err.message });
+    console.error("RAZORPAY ERROR:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 });
-
 // ─── VERIFY PAYMENT & SAVE RESUME ────────────────────────────────────────────
 router.post("/verify-and-save", verifyToken, upload.single("photo"), async (req, res) => {
   try {

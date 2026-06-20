@@ -113,7 +113,17 @@ const handlePhotoUpload = (
 
     try {
       // Calls your endpoint to initialize order configurations 
-      const orderRes = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/resume/create-order`);
+    const token = localStorage.getItem("token");
+
+const orderRes = await axios.post(
+  `${process.env.NEXT_PUBLIC_API_URL}/resume/create-order`,
+  {},
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
       const { id: order_id, currency, amount } = orderRes.data.order;
 
       const options = {
@@ -175,13 +185,15 @@ formData.append(
   response.razorpay_signature
 );
 
+const token = localStorage.getItem("token");
+
 const saveRes = await axios.post(
   `${process.env.NEXT_PUBLIC_API_URL}/resume/verify-and-save`,
   formData,
   {
     headers: {
-      "Content-Type":
-        "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
   }
 );
