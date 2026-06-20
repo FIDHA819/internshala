@@ -11,10 +11,12 @@ import { selectuser, login, logout } from "../../Feature/userSlice";
 import { auth, provider } from "../firebase/firebase";
 import { signInWithPopup, signOut } from "firebase/auth";
 import i18n from "../../i18n";
+import { useTranslation } from "react-i18next";
 
 export default function Navbar() {
   const user     = useSelector(selectuser);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   // Auth modal
   const [showAuthModal,   setShowAuthModal]   = useState(false);
@@ -172,11 +174,17 @@ export default function Navbar() {
         otp:   langOtpCode,
       });
       if (res.data.success) {
-        i18n.changeLanguage(pendingLang);
-        setShowLangOtpModal(false);
-        setLangOtpError("");
-        toast.success("Language switched to French!");
-      }
+  await i18n.changeLanguage(pendingLang);
+
+  localStorage.setItem("language", pendingLang);
+
+  setShowLangOtpModal(false);
+  setLangOtpError("");
+
+  toast.success("Language switched successfully!");
+
+  window.location.reload();
+}
     } catch {
       setLangOtpError("Invalid OTP. Please try again.");
     }
@@ -194,21 +202,21 @@ export default function Navbar() {
 
           {/* Nav links */}
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/internship" className="text-gray-700 hover:text-blue-600 font-medium text-sm transition-colors">Internships</Link>
-            <Link href="/job"        className="text-gray-700 hover:text-blue-600 font-medium text-sm transition-colors">Jobs</Link>
+            <Link href="/internship" className="text-gray-700 hover:text-blue-600 font-medium text-sm transition-colors">{t("Internships")}</Link>
+            <Link href="/job"        className="text-gray-700 hover:text-blue-600 font-medium text-sm transition-colors">{t("Jobs")}</Link>
 
             {user && (
               <>
                 <Link href="/public-space" className="text-gray-700 hover:text-blue-600 font-medium text-sm flex items-center gap-1.5 transition-colors">
-                  <Users size={16} /> Public Space
+                  <Users size={16} /> {t("publicSpace")}
                 </Link>
-                <Link href="/subscription" className="text-gray-700 hover:text-blue-600 font-medium text-sm transition-colors">Plans</Link>
+                <Link href="/subscription" className="text-gray-700 hover:text-blue-600 font-medium text-sm transition-colors">{t("plans")}</Link>
               </>
             )}
 
-            <Link href="/forgot-password" className="text-gray-500 hover:text-blue-600 font-medium text-sm transition-colors">Forgot Password?</Link>
+            <Link href="/forgot-password" className="text-gray-500 hover:text-blue-600 font-medium text-sm transition-colors">{t("forgotPassword")}</Link>
             <Link href="/resume" className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity">
-              Build Resume ✨
+              {t("buildResume")} ✨
             </Link>
 
             <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
