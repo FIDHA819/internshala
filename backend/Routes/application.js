@@ -35,15 +35,18 @@ router.post(
         });
       }
 
-      const applicationData =
-        new Application({
-          userId,
-          company: req.body.company,
-          category: req.body.category,
-          coverLetter: req.body.coverLetter,
-          availability: req.body.availability,
-          Application: req.body.Application,
-        });
+   const user = await User.findById(userId);
+
+const applicationData = new Application({
+  userId,
+  company: req.body.company,
+  category: req.body.category,
+  coverLetter: req.body.coverLetter,
+  availability: req.body.availability,
+  Application: req.body.Application,
+
+  resumeId: user.resumeId || "",
+});
 
       await applicationData.save();
 
@@ -90,13 +93,14 @@ router.get(
   verifyToken,
   async (req, res) => {
     try {
-      const applications =
-        await Application.find({
-          userId: req.user.id,
-        }).sort({
-          createdAt: -1,
-        });
-
+    const applications =
+  await Application.find({
+    userId: req.user.id,
+  })
+    .populate("userId")
+    .sort({
+      createdAt: -1,
+    });
       return res.json({
         success: true,
         applications,

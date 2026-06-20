@@ -5,6 +5,7 @@ const Razorpay   = require("razorpay");
 const Resume     = require("../Model/Resume");
 const upload     = require("../multer");
 const verifyToken = require("../Middleware/verifyToken");
+const User = require("../Model/User");
 
 require("dotenv").config();
 
@@ -70,17 +71,15 @@ router.post("/verify-and-save", verifyToken, upload.single("photo"), async (req,
 
     const photo = req.file ? `/uploads/${req.file.filename}` : "";
 
-    const updatedResume = await Resume.findOneAndUpdate(
-      { uid },
-      {
-        uid, name, email, phone, address,
-        qualification, experience, skills, photo,
-        paymentStatus:     true,
-        razorpayOrderId:   razorpay_order_id,
-        razorpayPaymentId: razorpay_payment_id,
-      },
-      { new: true, upsert: true }
-    );
+   const User = require("../Model/User");
+
+await User.findByIdAndUpdate(
+  req.user.id,
+  {
+    resumeId: updatedResume._id,
+    resumePdf: updatedResume.resumePdf || "",
+  }
+);
 
     return res.json({ success: true, data: updatedResume });
   } catch (err) {

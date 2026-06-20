@@ -334,7 +334,16 @@ export default function Profilepage() {
                 </>
               )}
             </div>
-
+{profileData?.user?.resumeId && (
+  <div className="mt-8 text-center">
+    <Link
+      href="/resume-builder"
+      className="bg-green-600 text-white px-5 py-2 rounded-lg"
+    >
+      View My Resume
+    </Link>
+  </div>
+)}
             {/* Bottom Actions */}
             <div className="flex justify-center mt-10">
               <Link

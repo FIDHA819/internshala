@@ -31,6 +31,16 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  resumeId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Resume",
+  default: null,
+},
+
+resumePdf: {
+  type: String,
+  default: "",
+},
 
   // ── Login auditing ──────────────────────────────────────────────────────────
   loginHistory: [LoginHistorySchema],
