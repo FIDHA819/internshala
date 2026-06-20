@@ -213,14 +213,17 @@ router.get("/profile-dashboard", verifyToken, async (req, res) => {
     return res.json({
       success: true,
       user: {
-        _id: user._id,
-        email: user.email,
-        photo: user.photo,
-        plan: user.plan,
-        planExpiresAt: user.planExpiresAt,
-        monthlyApplicationCount:
-          user.monthlyApplicationCount,
-      },
+  _id: user._id,
+  email: user.email,
+  photo: user.photo,
+  plan: user.plan,
+  planExpiresAt: user.planExpiresAt,
+  monthlyApplicationCount:
+    user.monthlyApplicationCount,
+
+  resumeId: user.resumeId,
+  resumePdf: user.resumePdf,
+},
       friends: user.friends,
       requests:
         user.friendRequestsReceived,
