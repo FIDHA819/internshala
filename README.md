@@ -133,7 +133,7 @@ EMAIL_PASSWORD=
 ### Clone Repository
 
 ```bash
-git clone https://github.com/your-username/intern-area.git
+git clone https://github.com/FIDHA819/intern-area.git
 ```
 
 ### Install Dependencies
