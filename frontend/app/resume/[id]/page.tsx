@@ -59,11 +59,15 @@ export default function ResumeViewPage() {
 
     <div className="flex items-center gap-6">
 
-      <img
-        src={`${process.env.NEXT_PUBLIC_API_URL}${resume.photo}`}
-        alt={resume.name}
-        className="w-32 h-32 rounded-full object-cover border"
-      />
+     <img
+  src={
+    resume.photo
+      ? `${process.env.NEXT_PUBLIC_API_URL}${resume.photo}`
+      : "/default-avatar.png"
+  }
+  alt={resume.name}
+  className="w-32 h-32 rounded-full object-cover border"
+/>
 
       <div>
         <h1 className="text-3xl font-bold">

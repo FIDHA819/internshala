@@ -1,17 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const nodemailer = require("nodemailer");
-const bcrypt = require("bcryptjs"); // 1. Import bcrypt
+const bcrypt = require("bcryptjs");
 
 const PasswordReset = require("../Model/PasswordReset");
-const User = require("../Model/User"); // 2. Import your User model here
+const User = require("../Model/User");
 
 function generatePassword() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
   let password = "";
+
   for (let i = 0; i < 10; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
+    password += chars.charAt(
+      Math.floor(Math.random() * chars.length)
+    );
   }
+
   return password;
 }
 
@@ -19,76 +24,154 @@ router.post("/", async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Verify that the user actually exists in your main User database collection first
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user) {
-      return res.status(404).json({
+    if (!email) {
+      return res.status(400).json({
         success: false,
-        message: "No account found with this email address.",
+        message: "Email is required",
       });
     }
 
-    // Rate limiting check
+    const user = await User.findOne({
+      email: email.toLowerCase().trim(),
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email",
+      });
+    }
+
     const existing = await PasswordReset.findOne({ email });
-    if (existing && existing.lastResetAt) {
-      const diff = Date.now() - new Date(existing.lastResetAt).getTime();
-      const hours = diff / (1000 * 60 * 60);
+
+    if (existing?.lastResetAt) {
+      const diff =
+        Date.now() -
+        new Date(existing.lastResetAt).getTime();
+
+      const hours =
+        diff / (1000 * 60 * 60);
 
       if (hours < 24) {
         return res.json({
           success: false,
-          message: "You can use this option only once per day.",
+          message:
+            "You can reset password only once per day",
         });
       }
     }
 
-    const generatedPassword = generatePassword();
+    const generatedPassword =
+      generatePassword();
 
-    // 3. Hash the newly generated password to safely update the User record
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(generatedPassword, salt);
+    const hashedPassword =
+      await bcrypt.hash(
+        generatedPassword,
+        10
+      );
 
-    // 4. Update the actual User document record with the hashed credentials
     await User.findOneAndUpdate(
-      { email: email.toLowerCase().trim() },
-      { $set: { password: hashedPassword } }
+      {
+        email:
+          email.toLowerCase().trim(),
+      },
+      {
+        password:
+          hashedPassword,
+      }
     );
 
-    // Dispatch notification to user mailbox via nodemailer
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    const response =
+      await fetch(
+        "https://api.brevo.com/v3/smtp/email",
+        {
+          method: "POST",
+          headers: {
+            accept:
+              "application/json",
+            "content-type":
+              "application/json",
+            "api-key":
+              process.env.BREVO_API_KEY,
+          },
+          body: JSON.stringify({
+            sender: {
+              name: "Intern Area",
+              email:
+                process.env.BREVO_SENDER_EMAIL,
+            },
 
-    await transporter.sendMail({
-      from: process.env.EMAIL,
-      to: email,
-      subject: "Password Recovery",
-      text: `Your generated password is: ${generatedPassword}`,
-    });
+            to: [
+              {
+                email,
+              },
+            ],
 
-    // Sync your verification token metadata record collection tracking engine
+            subject:
+              "Password Recovery",
+
+            htmlContent: `
+              <h2>Password Recovery</h2>
+
+              <p>Your new password:</p>
+
+              <h1>${generatedPassword}</h1>
+
+              <p>Please login and change it immediately.</p>
+            `,
+          }),
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      console.log(
+        "BREVO ERROR:",
+        data
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to send email",
+      });
+    }
+
     await PasswordReset.findOneAndUpdate(
       { email },
       {
-        generatedPassword, // Keeps plain text log in this secondary collection if needed for tracking
-        lastResetAt: new Date(),
+        lastResetAt:
+          new Date(),
       },
-      { upsert: true }
+      {
+        upsert: true,
+      }
     );
 
-    res.json({
+    console.log(
+      "PASSWORD EMAIL SENT:",
+      email
+    );
+
+    return res.json({
       success: true,
-      message: "Password sent to email successfully!",
+      message:
+        "Password sent successfully",
     });
+
   } catch (err) {
-    console.log(err);
-    res.status(500).json({
+
+    console.log(
+      "FORGOT PASSWORD ERROR:",
+      err
+    );
+
+    return res.status(500).json({
       success: false,
-      error: err.message,
+      message:
+        err.message,
     });
   }
 });

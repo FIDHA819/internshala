@@ -59,11 +59,11 @@ router.post("/send-otp", async (req, res) => {
 
     await sendEmailViaBrevo(
       email,
-      "Language Change Verification",
+      " Verification",
       `
       <div style="font-family:sans-serif;padding:20px">
-        <h2>Language Change Verification</h2>
-        <p>Use the OTP below to verify your language change:</p>
+        <h2> Verification</h2>
+        <p>Use the OTP below to verify your  change:</p>
 
         <div style="
           font-size:36px;
