@@ -21,9 +21,10 @@ const PLANS = {
 
 // ─── Helper: is current IST time within 10:00–11:00 AM? ──────────────────────
 function isPaymentWindowOpen() {
-  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
-  const istHour = new Date(Date.now() + IST_OFFSET_MS).getUTCHours();
-  return istHour >= 10 && istHour < 11;
+  // const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+  // const istHour = new Date(Date.now() + IST_OFFSET_MS).getUTCHours();
+  // return istHour >= 10 && istHour < 11;
+    return true;
 }
 
 // ─── Helper: send invoice email after successful payment ─────────────────────
