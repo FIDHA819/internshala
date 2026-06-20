@@ -123,5 +123,26 @@ router.get("/:uid", verifyToken, async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 });
+router.get("/id/:id", verifyToken, async (req, res) => {
+  try {
+    const resume = await Resume.findById(req.params.id);
 
+    if (!resume) {
+      return res.status(404).json({
+        success: false,
+        message: "Resume not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      resume,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
 module.exports = router;

@@ -336,11 +336,15 @@ export default function Profilepage() {
             </div>
 {profileData?.user?.resumeId && (
   <div className="mt-8 text-center">
+    <p className="text-green-600 font-semibold mb-2">
+      Resume Created Successfully ✓
+    </p>
+
     <Link
-      href="/resume-builder"
+      href={`/resume/${profileData.user.resumeId}`}
       className="bg-green-600 text-white px-5 py-2 rounded-lg"
     >
-      View My Resume
+      View Resume
     </Link>
   </div>
 )}

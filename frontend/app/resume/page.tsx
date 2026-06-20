@@ -138,7 +138,7 @@ const orderRes = await axios.post(
             // Securely transfer validated details to be attached directly onto profile model
            const formData = new FormData();
 
-formData.append("uid", user.id);
+formData.append("uid", user._id);
 
 formData.append("name", form.name);
 
