@@ -71,7 +71,27 @@ router.post("/verify-and-save", verifyToken, upload.single("photo"), async (req,
 
     const photo = req.file ? `/uploads/${req.file.filename}` : "";
 
-   const User = require("../Model/User");
+const updatedResume = await Resume.findOneAndUpdate(
+  { uid },
+  {
+    uid,
+    name,
+    email,
+    phone,
+    address,
+    qualification,
+    experience,
+    skills,
+    photo,
+    paymentStatus: true,
+    razorpayOrderId: razorpay_order_id,
+    razorpayPaymentId: razorpay_payment_id,
+  },
+  {
+    new: true,
+    upsert: true,
+  }
+);
 
 await User.findByIdAndUpdate(
   req.user.id,
@@ -81,7 +101,12 @@ await User.findByIdAndUpdate(
   }
 );
 
-    return res.json({ success: true, data: updatedResume });
+return res.json({
+  success: true,
+  data: updatedResume,
+});
+
+   
   } catch (err) {
     console.error("Resume save error:", err);
     return res.status(500).json({ success: false, message: err.message });
