@@ -54,38 +54,62 @@ export default function ResumeViewPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-10 shadow mt-10 rounded">
+   
+  <div className="max-w-4xl mx-auto bg-white p-10 shadow mt-10 rounded">
 
-      <h1 className="text-3xl font-bold">
-        {resume.name}
-      </h1>
+    <div className="flex items-center gap-6">
 
-      <p>{resume.email}</p>
+      <img
+        src={`${process.env.NEXT_PUBLIC_API_URL}${resume.photo}`}
+        alt={resume.name}
+        className="w-32 h-32 rounded-full object-cover border"
+      />
 
-      <p>{resume.phone}</p>
+      <div>
+        <h1 className="text-3xl font-bold">
+          {resume.name}
+        </h1>
 
-      <p>{resume.address}</p>
+        <p className="text-gray-600">
+          {resume.email}
+        </p>
 
-      <hr className="my-6" />
+        <p className="text-gray-600">
+          {resume.phone}
+        </p>
 
-      <h2 className="font-bold text-xl">
-        Qualification
-      </h2>
-
-      <p>{resume.qualification}</p>
-
-      <h2 className="font-bold text-xl mt-6">
-        Experience
-      </h2>
-
-      <p>{resume.experience}</p>
-
-      <h2 className="font-bold text-xl mt-6">
-        Skills
-      </h2>
-
-      <p>{resume.skills}</p>
+        <p className="text-gray-600">
+          {resume.address}
+        </p>
+      </div>
 
     </div>
-  );
+
+    <hr className="my-6" />
+
+    <h2 className="font-bold text-xl">
+      Qualification
+    </h2>
+
+    <p className="mt-2">
+      {resume.qualification}
+    </p>
+
+    <h2 className="font-bold text-xl mt-6">
+      Experience
+    </h2>
+
+    <p className="mt-2">
+      {resume.experience}
+    </p>
+
+    <h2 className="font-bold text-xl mt-6">
+      Skills
+    </h2>
+
+    <p className="mt-2">
+      {resume.skills}
+    </p>
+
+  </div>  );
 }
