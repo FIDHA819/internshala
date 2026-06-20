@@ -95,11 +95,10 @@ router.post("/", async (req, res) => {
               process.env.BREVO_API_KEY,
           },
           body: JSON.stringify({
-            sender: {
-              name: "Intern Area",
-              email:
-                process.env.BREVO_SENDER_EMAIL,
-            },
+           sender: {
+  name: "Intern Area",
+  email: process.env.FROM_EMAIL,
+},
 
             to: [
               {
