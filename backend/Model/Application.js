@@ -16,6 +16,7 @@ const ApplicationSchema = new mongoose.Schema({
   availability: String,
 
   Application: Object,
+  
 resumeId: {
   type: mongoose.Schema.Types.ObjectId,
   ref: "Resume",

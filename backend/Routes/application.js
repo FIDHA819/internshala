@@ -50,7 +50,7 @@ const applicationData = new Application({
 
       await applicationData.save();
 
-      const user = await User.findById(userId);
+      
 
 user.monthlyApplicationCount += 1;
 
