@@ -208,20 +208,20 @@ export default function Navbar() {
             {user && (
               <>
                 <Link href="/public-space" className="text-gray-700 hover:text-blue-600 font-medium text-sm flex items-center gap-1.5 transition-colors">
-                  <Users size={16} /> {t("publicSpace")}
+                  <Users size={16} /> {t("Public Space")}
                 </Link>
-                <Link href="/subscription" className="text-gray-700 hover:text-blue-600 font-medium text-sm transition-colors">{t("plans")}</Link>
+                <Link href="/subscription" className="text-gray-700 hover:text-blue-600 font-medium text-sm transition-colors">{t("Plans")}</Link>
               </>
             )}
 
-            <Link href="/forgot-password" className="text-gray-500 hover:text-blue-600 font-medium text-sm transition-colors">{t("forgotPassword")}</Link>
+            <Link href="/forgot-password" className="text-gray-500 hover:text-blue-600 font-medium text-sm transition-colors">{t("Forgot Password?")}</Link>
             <Link href="/resume" className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm hover:opacity-90 transition-opacity">
-              {t("buildResume")} ✨
+              {t("Build Resume")} ✨
             </Link>
 
             <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
               <Search size={16} className="text-gray-400" />
-              <input placeholder="Search opportunities..." className="ml-2 bg-transparent outline-none text-sm w-40 lg:w-48 text-black" />
+              <input placeholder={t("Search opportunities...")} className="ml-2 bg-transparent outline-none text-sm w-40 lg:w-48 text-black" />
             </div>
 
             <div className="flex items-center gap-1 border rounded px-2 py-1 bg-gray-50">
@@ -250,14 +250,14 @@ export default function Navbar() {
                   </div>
                 </Link>
                 <button onClick={handleLogout} className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-                  Logout
+              {t("Logout")}
                 </button>
               </>
             ) : (
               <>
                 <button onClick={() => { setIsRegisterMode(false); setShowAuthModal(true); }}
                   className="border rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                  Sign In
+                {t("Sign In")}
                 </button>
                 <Link href="/adminlogin" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Admin</Link>
               </>
